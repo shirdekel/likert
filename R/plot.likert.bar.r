@@ -74,6 +74,10 @@ likert.bar.plot <- function(l,
     text.color.manual.pos <- text.color
   }
 
+  if (!any(nzchar(text.color.manual.neutral))) {
+    text.color.manual.neutral <- text.color
+  }
+
   if(!any(nzchar(text.color.manual.neg))) {
     text.color.manual.neg <- text.color
   }
@@ -185,13 +189,16 @@ likert.bar.plot <- function(l,
                              pos = cumsum(value) - 0.5 * value
                              )
         lpercentpos <- lpercentpos[lpercentpos$variable != middle_response, ]
+        lpercentpos$text.color.manual.pos <- text.color.manual.pos
+
         p <- p + geom_text(
                    data = lpercentpos,
                    aes(
                      x = Group, y = pos,
                      label = paste0(prettyNum(value, digits = digits, drop0trailing = drop0trailing, zero.print = zero.print), "%"),
                      group = Item
-                   ), size = text.size
+                   ), size = text.size,
+                     color = text.color.manual.pos
                  )
         lpercentneg <- results[results$value < 0, ]
         if (nrow(lpercentneg) > 0) {
@@ -205,24 +212,28 @@ likert.bar.plot <- function(l,
                   )
           lpercentneg$pos <- lpercentneg$pos * -1
           lpercentneg <- lpercentneg[lpercentneg$variable != middle_response, ]
+          lpercentneg$text.color.manual.neg <- text.color.manual.neg
           p <- p + geom_text(
                      data = lpercentneg,
                      aes(
                        x = Group, y = pos,
                        label = paste0(prettyNum(abs(value), digits = digits, drop0trailing = drop0trailing, zero.print = zero.print), "%")
                      ),
-                     size = text.size
+                     size = text.size,
+                     color = text.color.manual.neg
                    )
         }
         if (include.center) {
           lpercentmid$pos <- 0
+          lpercentmid$text.color.manual.neutral <- text.color.manual.neutral
           p <- p + geom_text(
                      data = lpercentmid,
                      aes(
                        x = Group, y = pos,
                        label = paste0(prettyNum(abs(value), digits = digits, drop0trailing = drop0trailing, zero.print = zero.print), "%")
                      ),
-                     size = text.size
+                     size = text.size,
+                     color = text.color.manual.neutral
                    )
         }
       } else {
