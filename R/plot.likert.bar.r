@@ -378,14 +378,25 @@ likert.bar.plot <- function(l,
 			center.label <- ''
 			if(center %% 1 == 0) { # Midpoint is a level (i.e. there are an odd number of levels)
 				center.label <- names(l$results)[center+1]
+        lower.label <- names(l$results)[2:center]
+        upper.label <- names(l$results)[(center+2):(length(names(l$results)))]
 			}
 			lpercentpos <- ddply(results[results$value > 0,], .(Item), transform, 
-								 pos = cumsum(value) - 0.5*value)
-			p <- p + geom_text(data=lpercentpos[lpercentpos$variable != center.label,], 
+                 pos = cumsum(value) - 0.5*value)
+      p <- p + geom_text(
+                 data = lpercentpos[lpercentpos$variable %in% upper.label, ],
+                 aes(
+                   x = Item, y = pos,
+                   label = paste0(prettyNum(value, digits = digits, drop0trailing = drop0trailing, zero.print = zero.print), "%")
+                 ),
+                 size = text.size,
+                 color = text.color.manual.pos
+               )
+			p <- p + geom_text(data=lpercentpos[lpercentpos$variable %in% lower.label, ], 
 							   aes(x=Item, y=pos, 
-                             color=text.color.manual.pos, 
 						label=paste0(prettyNum(value, digits=digits, drop0trailing=drop0trailing, zero.print=zero.print), '%')),
-						size=text.size)
+						size=text.size, 
+                             color=text.color.manual.neg)
 			lpercentneg <- results[results$value < 0,]
 			if(nrow(lpercentneg) > 0) {
 				lpercentneg <- lpercentneg[nrow(lpercentneg):1,]
@@ -399,7 +410,6 @@ likert.bar.plot <- function(l,
 							size=text.size)
 			}
 			lpercentneutral <- results[results$variable == center.label,]
-      lpercentneutral$text.color.manual.neutral <- text.color.manual.neutral
 			if(nrow(lpercentneutral) > 0 & centered) {
 				p <- p + geom_text(data=lpercentneutral, 
 								   aes(x=Item, y=0, color=text.color.manual.neutral, 
@@ -408,8 +418,8 @@ likert.bar.plot <- function(l,
 			}
 			if(nrow(lpercentneutral) > 0 & !centered) {
 			  p <- p + geom_text(data=lpercentpos[lpercentpos$variable == center.label,], 
-			                     aes(x=Item, y=pos, color=text.color.manual.neutral, 
-			                         label=paste0(prettyNum(value, digits=digits, drop0trailing=drop0trailing, zero.print=zero.print), '%')),
+			                     aes(x=Item, y=pos, 
+			                         label=paste0(prettyNum(value, digits=digits, drop0trailing=drop0trailing, zero.print=zero.print), '%')), color=text.color.manual.neutral,
 			                         size=text.size)
 			}
 		}
